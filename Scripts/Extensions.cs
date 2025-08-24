@@ -6,6 +6,20 @@ namespace NotezyLib;
 public static class Extensions
 {
     /// <summary>
+    /// Adds an item to the list if it is not already present.
+    /// </summary>
+    /// <typeparam name="T">The type of items in the list</typeparam>
+    /// <param name="list">The list to add the item to</param>
+    /// <param name="item">The item to add</param>
+    public static void AddIfNotAlreadyInList<T>(this System.Collections.Generic.List<T> list, T item)
+    {
+        if (!list.Contains(item))
+        {
+            list.Add(item);
+        }
+    }
+
+    /// <summary>
     /// Returns a new array with <paramref name="obj"/> appended to the end.
     /// </summary>
     /// <typeparam name="T">The type of objects in the array</typeparam>

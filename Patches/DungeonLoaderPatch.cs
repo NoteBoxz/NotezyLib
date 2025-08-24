@@ -52,16 +52,11 @@ namespace NotezyLib.MultiDungeon.Patches
 
                 NotezyLib.LogMessage($"!!!OVERIDING DUNGEN SIZE!!!");
                 DungeonGenerator dungeonGenerator = LethalLevelLoader.Patches.RoundManager.dungeonGenerator.Generator;
-                DungeonFlow OGflow = dungeonGenerator.DungeonFlow;
-                dungeonGenerator.DungeonFlow = Object.Instantiate(dungeonGenerator.DungeonFlow);
-                int DivMin = Mathf.RoundToInt(dungeonGenerator.DungeonFlow.Length.Min / MultiDungeonGenerator.Instance.FlowDevision);
-                int DivMax = Mathf.RoundToInt(dungeonGenerator.DungeonFlow.Length.Max / MultiDungeonGenerator.Instance.FlowDevision);
-                dungeonGenerator.DungeonFlow.Length.Min = dungeonGenerator.DungeonFlow.Length.Min < MultiDungeonGenerator.Instance.MinimumMinFlowLength ?
-                 dungeonGenerator.DungeonFlow.Length.Min : DivMin;
-                dungeonGenerator.DungeonFlow.Length.Max = dungeonGenerator.DungeonFlow.Length.Max < MultiDungeonGenerator.Instance.MinimumMaxFlowLength ?
-                 dungeonGenerator.DungeonFlow.Length.Max : DivMax;
-                NotezyLib.LogInfo($"Original Flow Length: Min {OGflow.Length.Min}, Max {OGflow.Length.Max}");
-                NotezyLib.LogInfo($"New Flow Length: Min {dungeonGenerator.DungeonFlow.Length.Min}, Max {dungeonGenerator.DungeonFlow.Length.Max}");
+                ShrinkedFlow shrinkedFlow = DungeonFlowShrinker.ShrinkFlow(dungeonGenerator.DungeonFlow,
+                MultiDungeonGenerator.Instance.FlowDevision, MultiDungeonGenerator.Instance.MinimumMinFlowLength,
+                MultiDungeonGenerator.Instance.MinimumMaxFlowLength);
+                dungeonGenerator.DungeonFlow = shrinkedFlow.Flow;
+
                 foreach (DungeonFlow.GlobalPropSettings globalPropSettings in dungeonGenerator.DungeonFlow.GlobalProps)
                 {
                     if (globalPropSettings.ID == 1231)
@@ -70,7 +65,7 @@ namespace NotezyLib.MultiDungeon.Patches
                         break;
                     }
                 }
-                MultiDungeonGenerator.Instance.FlowsToRemove.Add(dungeonGenerator, (OGflow, dungeonGenerator.DungeonFlow));
+                MultiDungeonGenerator.Instance.ShrinkedFlows.Add(shrinkedFlow);
             }
             catch (System.Exception ex)
             {

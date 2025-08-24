@@ -48,7 +48,7 @@ namespace NotezyLib.MultiDungeon
 
         #region Collections
         [Header("Set by game, do not modify")]
-        public Dictionary<DungeonGenerator, (DungeonFlow OriginalFlow, DungeonFlow ClonedFlow)> FlowsToRemove = new();
+        public List<ShrinkedFlow> ShrinkedFlows = new();
         public List<IntWithRarity> LLLdungeonFlowTypes = new();
         public int[] RandomSeeds = new int[0];
         public int[] FlowIds = new int[0];
@@ -125,12 +125,13 @@ namespace NotezyLib.MultiDungeon
                 GeneratedExtraDungeons = true;
                 NotezyLib.LogMessage("All extra dungeons have been generated");
                 NotezyLib.LogDebug($"Seeds: (mapSeed: {StartOfRound.Instance.randomMapSeed}) {string.Join(", ", RandomSeeds)}");
-                foreach (var flow in FlowsToRemove)
+                NotezyLib.LogDebug($"Shrinked Flows: {string.Join(", ", ShrinkedFlows.Select(f => f.Flow.name + $"({f.PrevMinLength}->{f.NewMinLength}, {f.PrevMaxLength}->{f.NewMaxLength})"))}");
+                foreach (var flow in ShrinkedFlows)
                 {
-                    flow.Key.DungeonFlow = flow.Value.Item1; // Restore original flow
-                    Destroy(flow.Value.Item2); // Destroy cloned flow
+                    bool did = DungeonFlowShrinker.RestoreFlow(flow.Flow);
+                    NotezyLib.LogDebug($"Restored flow '{flow.Flow.name}' to original length: ({flow.PrevMinLength}, {flow.PrevMaxLength}) - Success: {did}");
                 }
-                FlowsToRemove.Clear();
+                DungeonFlowShrinker.ClearAllShrinkedFlows();
                 RoundManager.Instance.FinishGeneratingLevel();
                 OnAllDungeonsGenerated.Invoke();
                 yield break;
@@ -145,15 +146,10 @@ namespace NotezyLib.MultiDungeon
             DungeonFlow dungeonFlow = RoundManager.Instance.dungeonFlowTypes[flowTypeId].dungeonFlow;
 
             // Configure generator
-            dungeon.Generator.DungeonFlow = Instantiate(dungeonFlow);
             dungeon.Generator.ShouldRandomizeSeed = false;
             dungeon.Generator.Seed = seed;
-            int DivMin = Mathf.RoundToInt(dungeon.Generator.DungeonFlow.Length.Min / FlowDevision);
-            int DivMax = Mathf.RoundToInt(dungeon.Generator.DungeonFlow.Length.Max / FlowDevision);
-            dungeon.Generator.DungeonFlow.Length.Min = dungeon.Generator.DungeonFlow.Length.Min < MinimumMinFlowLength ? dungeon.Generator.DungeonFlow.Length.Min : DivMin;
-            dungeon.Generator.DungeonFlow.Length.Max = dungeon.Generator.DungeonFlow.Length.Max < MinimumMaxFlowLength ? dungeon.Generator.DungeonFlow.Length.Max : DivMax;
-            NotezyLib.LogInfo($"Previous Flow Length: Min {dungeonFlow.Length.Min}, Max {dungeonFlow.Length.Max}");
-            NotezyLib.LogInfo($"New Flow Length: Min {dungeon.Generator.DungeonFlow.Length.Min}, Max {dungeon.Generator.DungeonFlow.Length.Max}");
+            ShrinkedFlow shrinkedFlow = DungeonFlowShrinker.ShrinkFlow(dungeonFlow, FlowDevision, MinimumMinFlowLength, MinimumMaxFlowLength);
+            dungeon.Generator.DungeonFlow = shrinkedFlow.Flow;
 
             // Adjust length multiplier based on map size and factory size
             float num2;
@@ -168,7 +164,7 @@ namespace NotezyLib.MultiDungeon
                     break;
                 }
             }
-            FlowsToRemove.Add(dungeon.Generator, (dungeonFlow, dungeon.Generator.DungeonFlow));
+            ShrinkedFlows.AddIfNotAlreadyInList(shrinkedFlow);
 
             OnSingularExtraDungeonGenerationStarted.Invoke(dungeon);
 
@@ -219,8 +215,6 @@ namespace NotezyLib.MultiDungeon
             generator.OnGenerationStatusChanged -= Generator_OnGenerationStatusChanged;
 
             // Clean up
-            Dungeon DG = generator.Root.GetComponentInChildren<Dungeon>();
-            DG.DungeonFlow = FlowsToRemove[generator].Item1; // Restore original flow
             NotezyLib.LogInfo($"Dungeon {currentDungeonIndex} generation completed successfully");
 
             // Invoke event
