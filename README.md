@@ -1,15 +1,13 @@
 # Notezy Lib
 
-A Lethal Company Library mod, made for adding special mechanics to Custom Moons.
+A Lethal Company library mod for adding special mechanics to custom moons.
 
 ## Features
 
-> ### Multi Dungeon Generator
-Allows for custom moons to have more than one interior generated
-(Does not support fire exits)
-To set it up, go to the top toolbars, click on Tools -> NotezyLib -> Set Up Multi-Dungeon
-All settings are option, (aside from the extra dungon count)
+> ### Multi-Dungeon Generator
+Allows custom moons to have more than one interior generated (currently does not support fire exits).
 
-> ### Thats it!
-Aside from some occasinal scripts I've moved from my moons to this lib for later use, 
-the Multi Dungeon Generator is the biggest thing this lib has to offer so far.
+For developers: to set it up, go to the top menu and click Tools -> NotezyLib -> Set Up Multi-Dungeon. All settings are optional (aside from the extra dungeon count).
+
+> ### That's it!
+Aside from some occasional scripts I've moved from my moons to this lib for later use, the Multi-Dungeon Generator is the biggest feature this lib has to offer so far.
