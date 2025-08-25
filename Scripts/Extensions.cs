@@ -20,6 +20,24 @@ public static class Extensions
     }
 
     /// <summary>
+    /// Checks if a list of strings contains a string, ignoring case.
+    /// </summary>
+    /// <param name="list">The list to check</param>
+    /// <param name="item">The string to look for</param>
+    /// <returns>True if the list contains the string, false otherwise</returns>
+    public static bool ContainsLowercase(this System.Collections.Generic.List<string> list, string item)
+    {
+        foreach (string element in list)
+        {
+            if (element.ToLower() == item.ToLower())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Returns a new array with <paramref name="obj"/> appended to the end.
     /// </summary>
     /// <typeparam name="T">The type of objects in the array</typeparam>
