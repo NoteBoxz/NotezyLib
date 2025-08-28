@@ -11,12 +11,15 @@ public static class Extensions
     /// <typeparam name="T">The type of items in the list</typeparam>
     /// <param name="list">The list to add the item to</param>
     /// <param name="item">The item to add</param>
-    public static void AddIfNotAlreadyInList<T>(this System.Collections.Generic.List<T> list, T item)
+    /// <returns>True if the item was added, false if it was already present</returns>
+    public static bool AddIfNotAlreadyInList<T>(this System.Collections.Generic.List<T> list, T item)
     {
         if (!list.Contains(item))
         {
             list.Add(item);
+            return true;
         }
+        return false;
     }
 
     /// <summary>
@@ -127,7 +130,7 @@ public static class Extensions
         component = mono.GetComponentInParent<T>();
         return component != null;
     }
-    
+
     /// <summary>
     /// Tries to get a component of type T from the children of the given GameObject
     /// </summary>
